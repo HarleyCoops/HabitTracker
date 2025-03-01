@@ -30,8 +30,8 @@ jobs:
           GOOGLE_API_KEY_GEMINI: ${{ secrets.GOOGLE_API_KEY_GEMINI }}
           GOOGLE_DOC_ID: ${{ secrets.GOOGLE_DOC_ID }}
         run: |
-          # Output the key from the secret to a file using printf to avoid shell interpretation issues
-          printf '%s\n' '${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}' > key.json
+          # Output the key from the secret to a file using echo with proper quoting
+          echo '${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}' > key.json
           echo "Service account key file created"
 
           # Check if the file exists and has content (without revealing sensitive data)

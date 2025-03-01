@@ -22,8 +22,8 @@ jobs:
 
       - name: Test authentication
         run: |
-          # Create key file from secret - using printf to avoid shell interpretation issues
-          printf '%s\n' '${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}' > test_key.json
+          # Create key file from secret - using echo with proper quoting
+          echo '${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}' > test_key.json
           
           # Check if file has content
           if [ -s test_key.json ]; then
