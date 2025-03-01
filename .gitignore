@@ -1,8 +1,11 @@
 # Environment variables
 .env
 
-# Service account key
+# Service account key and related files
 key.json
+formatted_key.json
+github_secret.txt
+*_key.json
 
 # Python
 __pycache__/
@@ -38,4 +41,4 @@ ENV/
 
 # OS specific
 .DS_Store
-Thumbs.db 
+Thumbs.db
