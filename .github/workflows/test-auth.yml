@@ -22,12 +22,19 @@ jobs:
 
       - name: Test authentication
         run: |
-          # Create key file from secret
-          echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}" > test_key.json
+          # Create key file from secret - using printf to avoid shell interpretation issues
+          printf '%s\n' '${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}' > test_key.json
           
           # Check if file has content
           if [ -s test_key.json ]; then
             echo "Key file created with content"
+            # Check if it's valid JSON
+            if python -c "import json; json.load(open('test_key.json'))"; then
+              echo "Key file contains valid JSON"
+            else
+              echo "ERROR: Key file does not contain valid JSON"
+              exit 1
+            fi
           else
             echo "ERROR: Key file is empty"
             exit 1

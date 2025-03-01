@@ -30,13 +30,20 @@ jobs:
           GOOGLE_API_KEY_GEMINI: ${{ secrets.GOOGLE_API_KEY_GEMINI }}
           GOOGLE_DOC_ID: ${{ secrets.GOOGLE_DOC_ID }}
         run: |
-          # Output the key from the secret to a file.
-          echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}" > key.json
+          # Output the key from the secret to a file using printf to avoid shell interpretation issues
+          printf '%s\n' '${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}' > key.json
           echo "Service account key file created"
 
           # Check if the file exists and has content (without revealing sensitive data)
           if [ -s key.json ]; then
             echo "Service account key file exists and has content"
+            # Check if it's valid JSON
+            if python -c "import json; json.load(open('key.json'))"; then
+              echo "Service account key file contains valid JSON"
+            else
+              echo "Error: Service account key file does not contain valid JSON"
+              exit 1
+            fi
           else
             echo "Error: Service account key file is empty or does not exist"
             exit 1
