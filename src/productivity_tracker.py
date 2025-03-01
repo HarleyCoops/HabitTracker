@@ -32,21 +32,35 @@ def authenticate_google_docs_api():
         if os.path.exists('key.json'):
             # Use service account credentials
             SCOPES = ['https://www.googleapis.com/auth/documents', 'https://www.googleapis.com/auth/drive']
+            print(f"Found key.json file, using service account authentication with scopes: {SCOPES}")
             creds = service_account.Credentials.from_service_account_file('key.json', scopes=SCOPES)
-            print("Using service account authentication")
+            print(f"Service account email: {creds.service_account_email}")
+            print("Service account authentication successful")
         else:
             # Fall back to Application Default Credentials
             print("Service account key file not found, falling back to Application Default Credentials")
             creds, project = google.auth.default()
+            print(f"Using Application Default Credentials for project: {project}")
     except Exception as e:
         print(f"Authentication error: {e}")
+        # Print more details about the error
+        import traceback
+        print(traceback.format_exc())
         return None
 
     try:
+        print("Building Google Docs API service")
         service = build('docs', 'v1', credentials=creds)
+        print("Google Docs API service built successfully")
         return service
     except HttpError as err:
-        print(f"An error occurred: {err}")
+        print(f"Error building Google Docs API service: {err}")
+        print(f"Error details: {err.content.decode()}")
+        return None
+    except Exception as e:
+        print(f"Unexpected error building Google Docs API service: {e}")
+        import traceback
+        print(traceback.format_exc())
         return None
 
 def read_google_doc(document_id):
@@ -112,15 +126,19 @@ def write_analysis_to_doc(document_id, analysis, analysis_type):
 
     service = authenticate_google_docs_api()
     if not service:
+        print(f"Error: Failed to authenticate with Google Docs API for writing {analysis_type} analysis")
         return
 
     try:
+        print(f"Attempting to write {analysis_type} analysis to document {document_id}")
+        
         # Create structured analysis by type to append as a section of content.
         if analysis_type == "weekly":
             section_title = "Weekly Analysis"
         elif analysis_type == "monthly":
             section_title = "Monthly Analysis"
         else:
+            print(f"Error: Invalid analysis_type '{analysis_type}'. Must be 'weekly' or 'monthly'.")
             return "Error: Invalid analysis_type. Must be 'weekly' or 'monthly'."
 
         # Basic structure to contain the title as a heading and the analysis text below the title.
@@ -158,12 +176,20 @@ def write_analysis_to_doc(document_id, analysis, analysis_type):
                 }
             },
         ]
+        
+        print(f"Sending batchUpdate request to Google Docs API for {analysis_type} analysis")
         result = service.documents().batchUpdate(documentId=document_id,
                                                 body={'requests': requests}).execute()
-        print(f"Updated document {document_id} with {analysis_type} analysis")
+        print(f"Successfully updated document {document_id} with {analysis_type} analysis")
         return result
     except HttpError as err:
-        print(f"An error occurred: {err}")
+        print(f"Error writing to Google Doc: {err}")
+        # Print more details about the error
+        print(f"Error details: {err.content.decode()}")
+        return None
+    except Exception as e:
+        print(f"Unexpected error writing to Google Doc: {e}")
+        return None
 
 def main(automated=False):
     """Main function to run the productivity tracker."""

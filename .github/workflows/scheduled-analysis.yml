@@ -28,6 +28,14 @@ jobs:
       - name: Create service account key file
         run: |
           echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}" > key.json
+          echo "Service account key file created"
+          # Check if the file exists and has content (without revealing sensitive data)
+          if [ -s key.json ]; then
+            echo "Service account key file exists and has content"
+          else
+            echo "Error: Service account key file is empty or does not exist"
+            exit 1
+          fi
 
       - name: Set up environment variables
         env:
@@ -39,6 +47,11 @@ jobs:
           echo "GOOGLE_API_KEY_GEMINI=$GOOGLE_API_KEY_GEMINI" >> $GITHUB_ENV
           echo "GOOGLE_DOC_ID=$GOOGLE_DOC_ID" >> $GITHUB_ENV
           echo "WRITE_TO_DOC=true" >> $GITHUB_ENV
+          echo "Environment variables set:"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=key.json"
+          echo "GOOGLE_DOC_ID is set: $(if [ -n \"$GOOGLE_DOC_ID\" ]; then echo 'Yes'; else echo 'No'; fi)"
+          echo "GOOGLE_API_KEY_GEMINI is set: $(if [ -n \"$GOOGLE_API_KEY_GEMINI\" ]; then echo 'Yes'; else echo 'No'; fi)"
+          echo "WRITE_TO_DOC=true"
 
       - name: Determine analysis type
         id: analysis-type
@@ -46,10 +59,14 @@ jobs:
           # Check if it's the 1st of the month
           if [[ "$(date +%d)" == "01" ]]; then
             echo "ANALYSIS_TYPE=monthly" >> $GITHUB_ENV
+            echo "Running monthly analysis"
           else
             echo "ANALYSIS_TYPE=weekly" >> $GITHUB_ENV
+            echo "Running weekly analysis"
           fi
 
       - name: Run analysis
         run: |
-          python src/main.py --analyze --automated 
+          echo "Starting analysis with automated flag"
+          python src/main.py --analyze --automated --write-to-doc
+          echo "Analysis complete" 
