@@ -17,6 +17,7 @@ def main():
     parser.add_argument("--analysis-type", type=str, choices=["weekly", "monthly", "both"], default="both",
                         help="Type of analysis to generate (weekly, monthly, or both)")
     parser.add_argument("--write-to-doc", action="store_true", help="Write the analysis back to the Google Doc")
+    parser.add_argument("--automated", action="store_true", help="Run in automated mode without user prompts")
     
     args = parser.parse_args()
     
@@ -46,7 +47,11 @@ def main():
         if args.write_to_doc:
             os.environ["WRITE_TO_DOC"] = "true"
         
-        tracker_main()
+        # Run the tracker with automated flag if specified
+        if args.automated:
+            tracker_main(automated=True)
+        else:
+            tracker_main()
     
     elif args.dashboard:
         # Import and run the dashboard
