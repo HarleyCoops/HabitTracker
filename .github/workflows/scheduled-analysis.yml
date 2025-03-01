@@ -25,10 +25,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Create service account key file
+      - name: Set up environment variables and credentials
+        env:
+          GOOGLE_API_KEY_GEMINI: ${{ secrets.GOOGLE_API_KEY_GEMINI }}
+          GOOGLE_DOC_ID: ${{ secrets.GOOGLE_DOC_ID }}
         run: |
+          # Output the key from the secret to a file.
           echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}" > key.json
           echo "Service account key file created"
+
           # Check if the file exists and has content (without revealing sensitive data)
           if [ -s key.json ]; then
             echo "Service account key file exists and has content"
@@ -37,12 +42,7 @@ jobs:
             exit 1
           fi
 
-      - name: Set up environment variables
-        env:
-          GOOGLE_API_KEY_GEMINI: ${{ secrets.GOOGLE_API_KEY_GEMINI }}
-          GOOGLE_DOC_ID: ${{ secrets.GOOGLE_DOC_ID }}
-          WRITE_TO_DOC: "true"
-        run: |
+          #Set Environment Variables
           echo "GOOGLE_APPLICATION_CREDENTIALS=key.json" >> $GITHUB_ENV
           echo "GOOGLE_API_KEY_GEMINI=$GOOGLE_API_KEY_GEMINI" >> $GITHUB_ENV
           echo "GOOGLE_DOC_ID=$GOOGLE_DOC_ID" >> $GITHUB_ENV
@@ -69,4 +69,4 @@ jobs:
         run: |
           echo "Starting analysis with automated flag"
           python src/main.py --analyze --automated --write-to-doc
-          echo "Analysis complete" 
+          echo "Analysis complete"

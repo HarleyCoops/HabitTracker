@@ -1,0 +1,77 @@
+name: Test Google API Authentication
+
+on:
+  workflow_dispatch:  # Manual trigger only
+
+jobs:
+  test-auth:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install google-auth google-api-python-client
+
+      - name: Test authentication
+        run: |
+          # Create key file from secret
+          echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}" > test_key.json
+          
+          # Check if file has content
+          if [ -s test_key.json ]; then
+            echo "Key file created with content"
+          else
+            echo "ERROR: Key file is empty"
+            exit 1
+          fi
+          
+          # Create a simple Python script to test authentication
+          cat > test_auth.py << 'EOF'
+          import os
+          import sys
+          from google.oauth2 import service_account
+          from googleapiclient.discovery import build
+
+          try:
+              # Authenticate with the service account
+              SCOPES = ['https://www.googleapis.com/auth/documents.readonly']
+              creds = service_account.Credentials.from_service_account_file('test_key.json', scopes=SCOPES)
+              
+              # Print service account info
+              print(f"Successfully loaded credentials for: {creds.service_account_email}")
+              
+              # Try to build a service
+              docs_service = build('docs', 'v1', credentials=creds)
+              print("Successfully built Google Docs API service")
+              
+              # Try a simple API call if DOC_ID is available
+              doc_id = os.environ.get('GOOGLE_DOC_ID')
+              if doc_id:
+                  try:
+                      doc = docs_service.documents().get(documentId=doc_id).execute()
+                      print(f"Successfully accessed document: {doc.get('title')}")
+                  except Exception as e:
+                      print(f"Could not access document: {e}")
+              
+              print("Authentication test PASSED")
+              sys.exit(0)
+          except Exception as e:
+              print(f"Authentication test FAILED: {e}")
+              import traceback
+              print(traceback.format_exc())
+              sys.exit(1)
+          EOF
+          
+          # Run the test script
+          GOOGLE_DOC_ID="${{ secrets.GOOGLE_DOC_ID }}" python test_auth.py
+          
+          # Clean up
+          rm test_key.json test_auth.py
