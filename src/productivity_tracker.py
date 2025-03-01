@@ -3,7 +3,7 @@ import sys
 import google.auth
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from google import genai
+import google.generativeai as genai
 from dotenv import load_dotenv
 from data_parser import ProductivityDataParser
 from google.oauth2 import service_account
@@ -18,10 +18,10 @@ if not GOOGLE_API_KEY:
     sys.exit(1)
 
 # Print the API key (first few characters) for debugging
-print(f"Gemini API Key found: {GOOGLE_API_KEY[:10]}...")
+print(f"Gemini API key found: {GOOGLE_API_KEY[:10]}...")
 
-# Configure the Gemini API with the new client approach
-genai_client = genai.Client(api_key=GOOGLE_API_KEY)
+# Configure the Gemini API
+genai.configure(api_key=GOOGLE_API_KEY)
 
 def authenticate_google_docs_api():
     """Authenticates with the Google Docs API and returns the service."""
@@ -99,10 +99,8 @@ def generate_analysis_with_gemini(data, analysis_type="weekly"):
         return "Error: Invalid analysis_type. Must be 'weekly' or 'monthly'."
 
     try:
-        response = genai_client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=prompt
-        )
+        model = genai.GenerativeModel('gemini-2.0-flash')
+        response = model.generate_content(prompt)
         return response.text
 
     except Exception as e:
