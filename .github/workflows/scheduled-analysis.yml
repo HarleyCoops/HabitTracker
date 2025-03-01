@@ -1,0 +1,55 @@
+name: Scheduled Productivity Analysis
+
+on:
+  schedule:
+    # Run weekly analysis every Sunday at 8:00 PM UTC
+    - cron: '0 20 * * 0'
+    # Run monthly analysis on the 1st of each month at 8:00 PM UTC
+    - cron: '0 20 1 * *'
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Create service account key file
+        run: |
+          echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}" > key.json
+
+      - name: Set up environment variables
+        env:
+          GOOGLE_API_KEY_GEMINI: ${{ secrets.GOOGLE_API_KEY_GEMINI }}
+          GOOGLE_DOC_ID: ${{ secrets.GOOGLE_DOC_ID }}
+          WRITE_TO_DOC: "true"
+        run: |
+          echo "GOOGLE_APPLICATION_CREDENTIALS=key.json" >> $GITHUB_ENV
+          echo "GOOGLE_API_KEY_GEMINI=$GOOGLE_API_KEY_GEMINI" >> $GITHUB_ENV
+          echo "GOOGLE_DOC_ID=$GOOGLE_DOC_ID" >> $GITHUB_ENV
+          echo "WRITE_TO_DOC=true" >> $GITHUB_ENV
+
+      - name: Determine analysis type
+        id: analysis-type
+        run: |
+          # Check if it's the 1st of the month
+          if [[ "$(date +%d)" == "01" ]]; then
+            echo "ANALYSIS_TYPE=monthly" >> $GITHUB_ENV
+          else
+            echo "ANALYSIS_TYPE=weekly" >> $GITHUB_ENV
+          fi
+
+      - name: Run analysis
+        run: |
+          python src/main.py --analyze --automated 
