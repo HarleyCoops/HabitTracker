@@ -1,90 +1,82 @@
 # Productivity and Mood Tracker
 
-This application helps you track your productivity and mood by analyzing your Google Docs entries and generating insights using Google's Gemini AI.
+A tool to track and analyze your productivity and mood data from Google Docs using AI-powered insights.
 
 ## Features
 
-- Connect to Google Docs to read your productivity and mood data
-- Generate weekly and monthly analyses using Google's Gemini AI
-- Write the analyses back to your Google Doc
-- Simple command-line interface
+- Read productivity and mood data from Google Docs
+- Generate AI-powered weekly and monthly analysis using Google's Gemini AI
+- Write analysis back to your Google Doc
+- Automated analysis via GitHub Actions
 
-## Prerequisites
+## Setup
 
-- Python 3.7 or higher
-- Google Cloud account with the Google Docs API enabled
-- Google API key for Gemini AI
-- Google Application Default Credentials set up
+### Prerequisites
 
-## Installation
+- Python 3.8+
+- A Google Cloud Project with the following APIs enabled:
+  - Google Docs API
+  - Google Drive API
+  - Gemini AI API
+- A Google Doc containing your productivity and mood data
+
+### Installation
 
 1. Clone this repository:
    ```
-   git clone <repository-url>
+   git clone https://github.com/HarleyCoops/HabitTracker.git
    cd HabitTracker
    ```
 
-2. Install the required dependencies:
+2. Install dependencies:
    ```
    pip install -r requirements.txt
    ```
 
-3. Set up your environment variables:
-   - Create a `.env` file in the root directory
-   - Add your Google API key for Gemini AI:
-     ```
-     GOOGLE_API_KEY_GEMINI=your-api-key
-     ```
+3. Create a `.env` file with your configuration:
+   ```
+   GOOGLE_API_KEY_GEMINI=your_gemini_api_key
+   GOOGLE_DOC_ID=your_google_doc_id
+   ```
 
-4. Set up Google Application Default Credentials:
-   - Follow the instructions at: https://cloud.google.com/docs/authentication/provide-credentials-adc
+4. Set up Google Cloud service account:
+   - Create a service account in Google Cloud Console
+   - Grant it access to your Google Doc
+   - Download the service account key as `key.json`
 
 ## Usage
 
-1. Run the application:
-   ```
-   python src/productivity_tracker.py
-   ```
+### Manual Analysis
 
-2. Enter your Google Doc ID when prompted
-3. Choose the type of analysis you want to generate (weekly, monthly, or both)
-4. Review the generated analysis
-5. Choose whether to write the analysis back to your Google Doc
+Run the analysis manually:
 
-## Google Doc Format
-
-For best results, structure your Google Doc as follows:
-
-### Daily Logs
 ```
-Monday, March 1, 2023
-- Mood: 8/10
-- Focus: 7/10
-- Achievements: Completed project X, started task Y
-- Challenges: Distracted by social media
-- Notes: Felt more productive in the morning
-
-Tuesday, March 2, 2023
-...
+python src/main.py --analyze
 ```
 
-### Weekly Reviews
-```
-Week of March 1-7, 2023
-- Overall mood: 7/10
-- Overall productivity: 8/10
-- Key achievements: Completed project X, made progress on Y
-- Challenges: Struggled with focus on Wednesday and Thursday
-- Goals for next week: Complete task Z, improve morning routine
-```
+Options:
+- `--doc-id`: Specify a Google Doc ID
+- `--analysis-type`: Choose "weekly", "monthly", or "both"
+- `--write-to-doc`: Automatically write analysis to the Google Doc
+- `--automated`: Run in automated mode without user prompts
 
-## Future Enhancements
+### Automated Analysis with GitHub Actions
 
-- Dashboard integration for data visualization
-- Automated scheduling for regular analyses
-- Support for different data formats
-- Mobile app integration
+This repository includes GitHub Actions workflows that automatically run weekly and monthly analyses:
+
+1. Weekly analysis: Runs every Sunday at 8:00 PM UTC
+2. Monthly analysis: Runs on the 1st of each month at 8:00 PM UTC
+
+To set up GitHub Actions:
+
+1. Fork this repository
+2. Add the following secrets to your GitHub repository:
+   - `GOOGLE_SERVICE_ACCOUNT_KEY`: The contents of your `key.json` file (base64 encoded)
+   - `GOOGLE_API_KEY_GEMINI`: Your Gemini API key
+   - `GOOGLE_DOC_ID`: Your Google Doc ID
+
+The analysis results will be automatically written to your Google Doc.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+MIT 
