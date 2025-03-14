@@ -2,10 +2,8 @@ name: Scheduled Productivity Analysis
 
 on:
   schedule:
-    # Run weekly analysis every Friday at 4:00 AM UTC (9:00 PM MT Thursday)
-    - cron: '0 4 * * 5'
-    # Run monthly analysis on the 7th of each month at 4:00 AM UTC (9:00 PM MT on the 6th)
-    - cron: '0 4 7 * *'
+    # Run weekly analysis every Friday at 4:23 AM UTC (9:23 PM MT Thursday)
+    - cron: '23 4 * * 5'
   workflow_dispatch:  # Allow manual triggering
 
 jobs:
@@ -53,17 +51,11 @@ jobs:
           echo "GOOGLE_API_KEY_GEMINI is set: $(if [ -n \"$GOOGLE_API_KEY_GEMINI\" ]; then echo 'Yes'; else echo 'No'; fi)"
           echo "WRITE_TO_DOC=true"
 
-      - name: Determine analysis type
-        id: analysis-type
+      - name: Set analysis type
         run: |
-          # Check if it's the 7th of the month
-          if [[ "$(date +%d)" == "07" ]]; then
-            echo "ANALYSIS_TYPE=monthly" >> $GITHUB_ENV
-            echo "Running monthly analysis"
-          else
-            echo "ANALYSIS_TYPE=weekly" >> $GITHUB_ENV
-            echo "Running weekly analysis"
-          fi
+          # Always set to weekly analysis
+          echo "ANALYSIS_TYPE=weekly" >> $GITHUB_ENV
+          echo "Running weekly analysis"
 
       - name: Run analysis
         run: |
