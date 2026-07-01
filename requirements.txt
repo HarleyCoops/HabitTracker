@@ -1,5 +1,5 @@
-google-api-python-client>=2.197.0
-google-auth>=2.55.0
+google-api-python-client>=2.198.0
+google-auth>=2.55.1
 google-auth-oauthlib>=1.4.0
 google-auth-httplib2>=0.4.0
 google-generativeai>=0.8.6
